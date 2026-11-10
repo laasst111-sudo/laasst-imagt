@@ -4639,9 +4639,9 @@ async function createSettingsUI(
   try {
     html = await renderExtensionTemplateAsync('third-party/image-st', 'settings', {
       api_key: s.apiKey ?? '',
-      comfy_url: s.comfy_url ?? DEFAULTS.comfyUrl,
-      llm_url: s.llm_url ?? LLM_URL_DEFAULT,
-      llm_model: s.llm_model ?? LLM_MODEL_DEFAULT,
+      comfy_url: s.comfy_url || DEFAULTS.comfyUrl,
+      llm_url: s.llm_url || LLM_URL_DEFAULT,
+      llm_model: s.llm_model || LLM_MODEL_DEFAULT,
       llm_max_tokens: s.llm_max_tokens ?? 512,
       thinking_budget: s.thinking_budget ?? 0,
       steps: s.steps ?? DEFAULTS.steps,
@@ -4655,12 +4655,12 @@ async function createSettingsUI(
       fixed_suffix: s.fixed_prompt_suffix ?? '',
       negative_prompt: s.negative_prompt ?? '',
       // latent.moe 设置
-      generation_backend: s.generation_backend ?? "comfyui",
+      generation_backend: s.generation_backend || "comfyui",
       latent_api_key: s.latent_api_key ?? "",
-      latent_resolution: s.latent_resolution ?? "portrait",
+      latent_resolution: s.latent_resolution || "portrait",
       latent_steps: s.latent_steps ?? 12,
-      latent_sampler: s.latent_sampler ?? "euler",
-      latent_scheduler: s.latent_scheduler ?? "sgm_uniform",
+      latent_sampler: s.latent_sampler || "euler",
+      latent_scheduler: s.latent_scheduler || "sgm_uniform",
       latent_negative_prompt: s.latent_negative_prompt ?? "low quality, blurry, malformed hands, bad anatomy, extra limbs, missing limbs, fused fingers, too many fingers, long neck, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, bad feet",
       // RunningHub 设置
       rh_api_key: s.rh_api_key ?? "",
@@ -4685,19 +4685,19 @@ async function createSettingsUI(
 
   const llmUrlInput = document.getElementById("image_st_llm_url") as HTMLInputElement;
   llmUrlInput?.addEventListener("change", () => {
-    s.llm_url = llmUrlInput.value;
+    s.llm_url = llmUrlInput.value.trim() || LLM_URL_DEFAULT;
     saveSettingsDebounced();
   });
 
   const llmModelInput = document.getElementById("image_st_llm_model") as HTMLInputElement;
   llmModelInput?.addEventListener("change", () => {
-    s.llm_model = llmModelInput.value;
+    s.llm_model = llmModelInput.value.trim() || LLM_MODEL_DEFAULT;
     saveSettingsDebounced();
   });
 
   const urlInput = document.getElementById("image_st_comfy_url") as HTMLInputElement;
   urlInput?.addEventListener("change", () => {
-    s.comfy_url = urlInput.value;
+    s.comfy_url = urlInput.value.trim() || DEFAULTS.comfyUrl;
     saveSettingsDebounced();
   });
 
