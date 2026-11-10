@@ -1,3 +1,4 @@
+// @ts-expect-error — ST provides this module at runtime
 import { getContext } from "../../../../../scripts/st-context.js";
 // @ts-expect-error — ST provides this module at runtime
 import { eventSource, event_types, getRequestHeaders } from "../../../../../script.js";
