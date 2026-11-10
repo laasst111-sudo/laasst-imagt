@@ -19,7 +19,7 @@ import { extension_settings, renderExtensionTemplateAsync } from "../../../../..
 import { getContext } from "../../../../../scripts/st-context.js";
 // @ts-expect-error — ST provides this module at runtime
 import { eventSource, event_types } from "../../../../../script.js";
-import { SETTINGS_KEY, LORA_SLOT_COUNT, DEFAULTS, SAMPLERS, SCHEDULERS, fetchModelList, fetchLoraList, testComfyConnection, loadDefaultWorkflow } from "./comfy.js";
+import { SETTINGS_KEY, LORA_SLOT_COUNT, DEFAULTS, SAMPLERS, SCHEDULERS, fetchModelList, fetchLoraList, testComfyConnection, loadDefaultWorkflow, EXTENSION_FOLDER } from "./comfy.js";
 import { LLM_URL_DEFAULT, LLM_MODEL_DEFAULT } from "./api.js";
 import { detectModelFamily, getModelContextLength, familySupportsThinking, isGLMForcedThinking } from "./modelProfile.js";
 import { logger } from "./logger.js";
@@ -154,7 +154,7 @@ function initFloatingButton(onGenerate) {
         document.head.appendChild(metaTitle);
         const linkIcon = document.createElement('link');
         linkIcon.rel = 'apple-touch-icon';
-        linkIcon.href = '/scripts/extensions/third-party/image-st/icon-192.png';
+        linkIcon.href = `/scripts/extensions/${EXTENSION_FOLDER}/icon-192.png`;
         document.head.appendChild(linkIcon);
     }
     try {
@@ -4564,7 +4564,7 @@ async function createSettingsUI(onGenerate, getPreview, getPipelinePreview) {
     configureBaibai(() => extension_settings[SETTINGS_KEY]);
     let html = "";
     try {
-        html = await renderExtensionTemplateAsync('third-party/image-st', 'settings', {
+        html = await renderExtensionTemplateAsync(EXTENSION_FOLDER, 'settings', {
             api_key: s.apiKey ?? '',
             comfy_url: s.comfy_url || DEFAULTS.comfyUrl,
             llm_url: s.llm_url || LLM_URL_DEFAULT,

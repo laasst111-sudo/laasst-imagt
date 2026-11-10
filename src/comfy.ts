@@ -6,7 +6,15 @@ import { logger } from "./logger.js";
 export const SETTINGS_KEY = "image_st";
 export const LORA_SLOT_COUNT = 4;
 
-const WORKFLOW_PATH = "/scripts/extensions/third-party/image-st/%EF%BC%88%E8%87%AA%E7%94%A8%EF%BC%89Anima%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%96%87%E7%94%9F%E5%9B%BE%E5%B7%A5%E4%BD%9C%E6%B5%81.json";
+// Derive the actual deployed folder name from this module's URL so the
+// extension works regardless of what directory it was installed under.
+// e.g. ".../scripts/extensions/third-party/laasst-imagt/dist/comfy.js"
+//   → "third-party/laasst-imagt"
+const _selfUrl = import.meta.url;
+const _thirdPartyMatch = _selfUrl.match(/scripts\/extensions\/(third-party\/[^/]+)/);
+export const EXTENSION_FOLDER = _thirdPartyMatch ? _thirdPartyMatch[1] : "third-party/image-st";
+
+const WORKFLOW_PATH = `/scripts/extensions/${EXTENSION_FOLDER}/%EF%BC%88%E8%87%AA%E7%94%A8%EF%BC%89Anima%E6%AD%A3%E5%BC%8F%E7%89%88-%E6%96%87%E7%94%9F%E5%9B%BE%E5%B7%A5%E4%BD%9C%E6%B5%81.json`;
 
 let cachedWorkflow: string | null = null;
 let cachedLoraList: string[] = [];
