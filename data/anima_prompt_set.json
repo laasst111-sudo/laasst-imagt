@@ -1,0 +1,16 @@
+{
+  "generated": "2026-10-20T12:38:50.894Z",
+  "source": "https://civitai.red",
+  "model": "Anima",
+  "modelId": 2458426,
+  "period": "Month",
+  "sort": "Most Reactions",
+  "limit": 20,
+  "versionCount": 8,
+  "collected": 0,
+  "skipped": {
+    "noPrompt": 158,
+    "notAnima": 0
+  },
+  "prompts": []
+}

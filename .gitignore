@@ -1,0 +1,44 @@
+# 依赖
+node_modules/
+
+# 本地环境
+.env
+
+# 一次性分析脚本与中间产物
+_decode_bmz.mjs
+_inspect_bmz.mjs
+_survey_bmz.mjs
+_lexicon.dec.bin
+
+# 本地测试 / 临时文件
+test-*.mjs
+test-*.js
+Trace-*.json
+stat-*.json
+update_plotthink.*
+webbridge-req-*.json
+webbridge-req-snap.json
+wb*.py
+
+# 个人配置 / 浏览器 profile
+Firefox*.json
+Firefox*.json.gz
+"Firefox*.json/"
+
+# 自用工作流（不对外发布）
+（自用）*.json
+v0.*.json
+
+# 第三方参考插件与词库包（仅本地对照使用）
+外部工具/
+
+# Playwright
+.playwright-mcp/
+
+# 研究目录
+_research/
+webbridge-tests/
+
+# IDE
+.vscode/
+.kilo/
