@@ -1,0 +1,965 @@
+<div class="extension_container">
+<div id="image_st_settings" class="image_st_settings">
+<style>
+.image-st-collapsible-section { border: 1px solid var(--SmartThemeBorderColor); border-radius: 6px; margin: 8px 0; background: var(--black30a); }
+.image-st-collapsible-summary { padding: 8px 12px; cursor: pointer; font-weight: 600; user-select: none; list-style: none; display: flex; align-items: center; gap: 8px; }
+.image-st-collapsible-summary::-webkit-details-marker { display: none; }
+.image-st-collapsible-summary::before { content: "▶"; font-size: 10px; transition: transform 0.2s; flex-shrink: 0; }
+.image-st-collapsible-section[open] .image-st-collapsible-summary::before { transform: rotate(90deg); }
+.image-st-collapsible-content { padding: 0 12px 12px; border-top: 1px solid var(--SmartThemeBorderColor); margin-top: 4px; }
+</style>
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b>ST Image Plugin Gen2</b>
+            <div class="flex-container alignitemscenter" style="gap:8px;">
+                <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+            </div>
+        </div>
+        <div class="inline-drawer-content">
+            <div id="image_st_result" class="image-st-result"></div>
+
+<div id="image_st_tab_bar" class="image-st-tabs">
+                <span class="image-st-tab" data-tab="basic">基础设置</span>
+                <span class="image-st-tab" data-tab="text-cleaning">文本清洗</span>
+                <span class="image-st-tab" data-tab="llm">LLM配置</span>
+                <span class="image-st-tab active" data-tab="comfy">ComfyUI配置</span>
+                <span class="image-st-tab" data-tab="charlib">角色库</span>
+                <span class="image-st-tab" data-tab="pipeline">生成管线</span>
+            </div>
+
+            <div class="image-st-tab-content" data-tab="basic" style="display:none;">
+                <label for="image_st_auto_generate_mode">自动生成模式</label>
+                <select id="image_st_auto_generate_mode" class="text_pole">
+                    <option value="off">关闭</option>
+                    <option value="default">默认（每次新对话生成后生成图片）</option>
+                    <option value="charlib">联动角色库（匹配到角色才生成）</option>
+                </select>
+                <div class="image-st-hint-text">
+                    默认：每次角色回复后自动生成图片（30秒冷却）。
+                    联动角色库：角色回复后匹配一次本地角色库，正文命中库内角色名才生成，否则跳过。
+                </div>
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_floating_btn">
+                    <span>显示悬浮生成按钮（可拖拽移动）</span>
+                </label>
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_progress_enabled" checked>
+                    <span>显示生成进度</span>
+                </label>
+                <hr>
+                <div class="flex-container alignitemscenter image-st-action-row">
+                    <button id="image_st_copy_gallery_path" type="button" class="menu_button menu_button_icon">
+                        <i class="fa-solid fa-copy"></i> <span>复制图片目录</span>
+                    </button>
+                    <span id="image_st_gallery_path_status" class="image-st-hint-text"></span>
+                </div>
+                <div class="image-st-hint-text">
+                    图片保存在 user/images/{角色名}/ 目录下，按角色卡自动整理。
+                </div>
+
+                <hr>
+
+                <b>图片显示设置</b>
+                <label for="image_st_image_align">对齐方式</label>
+                <select id="image_st_image_align" class="text_pole">
+                    <option value="left">偏左</option>
+                    <option value="center" selected>居中</option>
+                    <option value="right">偏右</option>
+                </select>
+                <label for="image_st_image_size">图片大小</label>
+                <select id="image_st_image_size" class="text_pole">
+                    <option value="small">小（300px）</option>
+                    <option value="medium" selected>中（500px）</option>
+                    <option value="large">大（全宽）</option>
+                </select>
+
+                <hr>
+
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_progress_in_chat">
+                    <span>悬浮按钮显示生成进度动画</span>
+                </label>
+                <div class="image-st-hint-text">
+                    生成中：按钮图标变为旋转动画 + 脉冲光晕
+                </div>
+
+                <hr>
+
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_strip_inline_media">
+                    <span>发送请求前剥离图片（纯文本后端兼容）</span>
+                </label>
+                <div class="image-st-hint-text">
+                    开启后：发送给 LLM 的消息中自动移除 image_url 等多模态内容，仅保留文字。
+                    适用于不支持视觉输入的后端（如本地 localhost:8000），可避免
+                    "unknown variant `image_url`, expected `text`" 报错。图片在聊天中仍正常显示。
+                </div>
+
+                <hr>
+
+                <b>图片定位</b>
+                <label for="image_st_anchor_text">锚定文本（图片定位参照）</label>
+                <input id="image_st_anchor_text" class="text_pole" type="text" placeholder="例如：<正文>，为空时不定位" />
+                <label for="image_st_anchor_position">图片位置</label>
+                <select id="image_st_anchor_position" class="text_pole">
+                    <option value="above" selected>锚点上方</option>
+                    <option value="below">锚点下方</option>
+                </select>
+                <div class="image-st-hint-text">
+                    设置锚定文本后，图片将固定显示在消息中锚点文本的上方或下方。
+                </div>
+            </div>
+            <div class="image-st-tab-content" data-tab="text-cleaning" style="display:none;">
+                <label for="image_st_floor_count">楼层提取数量</label>
+                <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                    <input type="range" class="neo-range-slider wide100p" id="image_st_floor_count_slider" min="1" max="5" step="1" value="1">
+                    <input type="number" class="neo-range-input" id="image_st_floor_count" min="1" max="5" step="1" value="1">
+                </div>
+
+                <hr>
+
+                <div class="flex-container alignitemscenter justifySpaceBetween">
+                    <b>正则清洗规则</b>
+                    <button id="image_st_add_regex_rule" type="button" class="menu_button menu_button_icon">
+                        <i class="fa-solid fa-plus"></i> <span>添加规则</span>
+                    </button>
+                </div>
+                <div id="image_st_regex_rules_container"></div>
+
+                <hr>
+
+                <b>字数限制</b>
+                <label for="image_st_truncate_mode">截取模式</label>
+                <select id="image_st_truncate_mode" class="text_pole">
+                    <option value="percent">按百分比</option>
+                    <option value="chars">按字数</option>
+                </select>
+
+                <div id="image_st_truncate_percent_group">
+                    <label for="image_st_truncate_direction">截取方向</label>
+                    <select id="image_st_truncate_direction" class="text_pole">
+                        <option value="top">从上往下截取</option>
+                        <option value="bottom">从下往上截取</option>
+                    </select>
+                    <label for="image_st_truncate_percent">截取长度 <small>(100%=关闭)</small></label>
+                    <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                        <input type="range" class="neo-range-slider wide100p" id="image_st_truncate_percent_slider" min="1" max="100" step="1" value="100">
+                        <input type="number" class="neo-range-input" id="image_st_truncate_percent" min="1" max="100" step="1" value="100">
+                    </div>
+                </div>
+
+                <div id="image_st_truncate_chars_group" style="display:none;">
+                    <label for="image_st_truncate_direction_chars">截取方向</label>
+                    <select id="image_st_truncate_direction_chars" class="text_pole">
+                        <option value="top">从上往下截取</option>
+                        <option value="bottom">从下往上截取</option>
+                    </select>
+                    <label for="image_st_truncate_chars">目标字数 <small>(±100 容差，按段落边界截断)</small></label>
+                    <input type="number" class="text_pole" id="image_st_truncate_chars" min="100" max="50000" step="100" value="2000">
+                    <label for="image_st_truncate_tolerance">容差范围</label>
+                    <input type="number" class="text_pole" id="image_st_truncate_tolerance" min="0" max="500" step="10" value="100">
+                </div>
+
+                <hr>
+
+                <b>文本清洗测试工具 <small id="image_st_test_cleaning_chars">(0 字符)</small></b>
+                <div class="flex-container alignitemscenter image-st-action-row" style="flex-wrap:wrap; gap:8px;">
+                    <button id="image_st_test_cleaning" type="button" class="menu_button menu_button_icon">
+                        <i class="fa-solid fa-play"></i> <span>执行测试</span>
+                    </button>
+                    <button id="image_st_extract_tags" type="button" class="menu_button menu_button_icon">
+                        <i class="fa-solid fa-tags"></i> <span>提取标签</span>
+                    </button>
+                </div>
+                <textarea id="image_st_test_cleaning_result" class="text_pole textarea_compact autoSetHeight" rows="6" readonly placeholder="点击「执行测试」查看清洗结果..."></textarea>
+                <div id="image_st_extracted_tags_container" style="margin-top:8px; display:none;"></div>
+            </div>
+
+<div class="image-st-tab-content" data-tab="llm" style="display:none;">
+                <hr>
+
+                <!-- 统一的 API 配置区：顶部下拉切换 + 下方字段编辑 -->
+                <div class="flex-container alignitemscenter justifySpaceBetween" style="margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                    <div class="flex-container alignitemscenter" style="gap:8px; flex:1; min-width:200px;">
+                        <label for="image_st_api_profile_select" style="white-space:nowrap; font-weight:500;">API 配置：</label>
+                        <select id="image_st_api_profile_select" class="text_pole" style="flex:1; min-width:180px;">
+                            <option value="">-- 手动输入 / 选择已保存配置 --</option>
+                        </select>
+                    </div>
+                    <div class="flex-container alignitemscenter" style="gap:6px;">
+                        <button id="image_st_api_profile_new" type="button" class="menu_button menu_button_icon" title="新建配置">
+                            <i class="fa-solid fa-plus"></i> <span>新建</span>
+                        </button>
+                        <button id="image_st_api_profile_delete" type="button" class="menu_button menu_button_icon" title="删除当前配置" disabled style="color:var(--SmartThemeQuoteColor);">
+                            <i class="fa-solid fa-trash"></i> <span>删除</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="image_st_api_profile_hint" class="image-st-hint-text" style="margin-bottom:8px;">
+                    选择上方配置可快速填入下方字段；修改字段后点击「保存配置」：
+                    <br>• 已选配置且字段有变化 → 询问确认后覆盖原配置
+                    <br>• 未选配置（新建模式） → 输入名称创建新配置
+                    <br>• 留空下拉框则使用下方手动输入的单次配置。
+                </div>
+
+                <label for="image_st_api_key">API Key</label>
+                <input id="image_st_api_key" class="text_pole" type="text" value="{{api_key}}" />
+                <label for="image_st_llm_url">LLM API URL</label>
+                <input id="image_st_llm_url" class="text_pole" type="text" value="{{llm_url}}" />
+                <label for="image_st_llm_model">LLM 模型</label>
+                <input id="image_st_llm_model" class="text_pole" type="text" value="{{llm_model}}" />
+                <div id="image_st_llm_profile" class="image-st-hint-text"></div>
+
+                <label for="image_st_llm_temperature">Temperature <small>(0-2, 默认 1)</small></label>
+                <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                    <input type="range" class="neo-range-slider wide100p" id="image_st_llm_temperature_slider" min="0" max="2" step="0.1" value="1">
+                    <input type="number" class="neo-range-input" id="image_st_llm_temperature" min="0" max="2" step="0.1" value="1">
+                </div>
+                <label for="image_st_llm_top_p">Top P <small>(0-1, 默认 1)</small></label>
+                <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                    <input type="range" class="neo-range-slider wide100p" id="image_st_llm_top_p_slider" min="0" max="1" step="0.05" value="1">
+                    <input type="number" class="neo-range-input" id="image_st_llm_top_p" min="0" max="1" step="0.05" value="1">
+                </div>
+                <hr>
+                <label for="image_st_llm_reasoning_effort">思考模式</label>
+                <select id="image_st_llm_reasoning_effort" class="text_pole">
+                    <option value="none">Non-think（默认）</option>
+                    <option value="high">Think High（推荐）</option>
+                    <option value="max">Think Max（复杂任务）</option>
+                </select>
+                <div id="image_st_llm_thinking_hint" class="image-st-hint-text">
+                    思考模式下 Temperature 与 Top P 参数不会生效。
+                </div>
+                <label for="image_st_thinking_budget">Thinking Budget <small>(0=使用模型默认)</small></label>
+                <input id="image_st_thinking_budget" class="text_pole" type="number" min="0" max="80000" step="1" value="{{thinking_budget}}" />
+                <div class="image-st-hint-text">
+                    控制模型内部推理的 token 上限。按模型家族自动适配字段：Qwen3/Kimi 用 thinking_budget，GLM-4.x 用 thinking.budget_tokens，DeepSeek 用 extra_body.thinking_budget。GLM-5.3 系列（强制思考）无预算参数，会忽略此项——其强度请用「思考模式」选项（映射为 reasoning_effort: low/high/max）。不支持的模型会忽略此参数。建议 1024-32768。
+                </div>
+                <label for="image_st_llm_max_tokens">最大输出 Token <small>(0=不限制)</small></label>
+                <input id="image_st_llm_max_tokens" class="text_pole" type="number" min="0" max="4096" step="1" value="{{llm_max_tokens}}" />
+                <div class="image-st-hint-text">
+                    限制 LLM 生成提示词的最大长度。建议 512~1024，设置 0 表示不限制。
+                </div>
+                <hr>
+                <label for="image_st_llm_json_mode">纯 JSON 输出模式（response_format）</label>
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_llm_json_mode">
+                    <span>开启后 LLM 直接回 JSON（会抑制 <thinking> 思维链，换取更稳的 JSON）</span>
+                </label>
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_retry_json_fail">
+                    <span>JSON 解析失败自动重试一次（默认关）</span>
+                </label>
+
+                <div class="flex-container alignitemscenter justifySpaceBetween" style="margin:8px 0; padding-top:8px; border-top:1px solid var(--SmartThemeBorderColor);">
+                    <button id="image_st_api_profile_save" type="button" class="menu_button menu_button_icon" style="background:var(--active);" title="保存当前字段为配置">
+                        <i class="fa-solid fa-save"></i> <span>保存配置</span>
+                    </button>
+                    <div class="flex-container alignitemscenter" style="gap:8px;">
+                        <span id="image_st_current_profile_preview" class="image-st-hint-text" style="margin-top:0;"></span>
+                        <button id="image_st_test_llm" type="button" class="menu_button menu_button_icon">
+                            <i class="fa-solid fa-plug"></i> <span>测试连接</span>
+                        </button>
+                        <span id="image_st_llm_status" class="image-st-llm-status"></span>
+                        <span id="image_st_llm_test_result" style="font-size:12px;color:var(--SmartThemeBodyColor);"></span>
+                    </div>
+                </div>
+
+            </div>
+            <div class="image-st-tab-content" data-tab="comfy">
+                <!-- 生成后端选择 -->
+                <div class="image-st-section" style="margin-bottom:16px;">
+                    <label for="image_st_generation_backend">生成后端</label>
+                    <select id="image_st_generation_backend" class="text_pole">
+                        <option value="comfyui" {{#if (eq generation_backend "comfyui")}}selected{{/if}}>ComfyUI (本地)</option>
+                        <option value="latent_moe" {{#if (eq generation_backend "latent_moe")}}selected{{/if}}>latent.moe (在线，Anima 2.9B)</option>
+                        <option value="runninghub" {{#if (eq generation_backend "runninghub")}}selected{{/if}}>RunningHub (在线，云端 ComfyUI)</option>
+                    </select>
+                    <div class="image-st-hint-text">
+                        ComfyUI：本地部署，无需联网，需自行配置模型和工作流。<br>
+                        latent.moe：在线生成，自带 Anima 2.9B-int8-turbo-merged，需 API Key (lat_sk_...)，免部署。<br>
+                        RunningHub：云端 ComfyUI，运行你在 RunningHub 上保存的工作流，需 API Key + 工作流 ID。
+                    </div>
+                </div>
+
+                <!-- RunningHub 设置 (仅在选中 runninghub 时显示) -->
+                <div id="image_st_runninghub_settings" style="display:none; margin-bottom:16px;">
+                    <hr style="margin:8px 0;">
+                    <label for="image_st_rh_api_key">RunningHub API Key</label>
+                    <input id="image_st_rh_api_key" class="text_pole" type="password" placeholder="在 https://www.runninghub.ai 账户设置中创建" value="{{rh_api_key}}" />
+                    <label for="image_st_rh_workflow_id">工作流 ID</label>
+                    <input id="image_st_rh_workflow_id" class="text_pole" type="text" placeholder="从 RunningHub 工作流页面复制（数字 ID）" value="{{rh_workflow_id}}" />
+                    <div class="image-st-hint-text">
+                        在 RunningHub 上打开你保存的工作流，URL 中的长串数字即为工作流 ID。
+                    </div>
+                    <div class="flex-container" style="gap:12px; margin-top:8px;">
+                        <div class="flex1">
+                            <label for="image_st_rh_prompt_node_id">提示词节点 ID <small>(必填)</small></label>
+                            <input id="image_st_rh_prompt_node_id" class="text_pole" type="text" placeholder="如: 6" value="{{rh_prompt_node_id}}" />
+                        </div>
+                        <div class="flex1">
+                            <label for="image_st_rh_negative_node_id">负面提示词节点 ID <small>(可选)</small></label>
+                            <input id="image_st_rh_negative_node_id" class="text_pole" type="text" placeholder="如: 7，留空=不注入" value="{{rh_negative_node_id}}" />
+                        </div>
+                    </div>
+                    <div class="image-st-hint-text">
+                        节点 ID 可从工作流 JSON 中查看（导出工作流后找 CLIPTextEncode 节点的键名）。
+                    </div>
+                    <label for="image_st_rh_negative_prompt">负面提示词</label>
+                    <textarea id="image_st_rh_negative_prompt" class="text_pole textarea_compact autoSetHeight" rows="2">{{rh_negative_prompt}}</textarea>
+                    <div class="flex-container alignitemscenter image-st-action-row" style="margin-top:8px;">
+                        <button id="image_st_test_runninghub" type="button" class="menu_button menu_button_icon">
+                            <i class="fa-solid fa-plug"></i> <span>测试连接</span>
+                        </button>
+                        <span id="image_st_rh_test_result" style="font-size:12px;color:var(--SmartThemeBodyColor);"></span>
+                    </div>
+                </div>
+
+                <!-- latent.moe 设置 (仅在选中 latent_moe 时显示) -->
+                <div id="image_st_latent_moe_settings" style="display:none; margin-bottom:16px;">
+                    <hr style="margin:8px 0;">
+                    <label for="image_st_latent_api_key">latent.moe API Key (lat_sk_...)</label>
+                    <input id="image_st_latent_api_key" class="text_pole" type="password" placeholder="在 https://latent.moe/settings/keys 创建" value="{{latent_api_key}}" />
+                    <div class="image-st-hint-text">
+                        API Key 需在 latent.moe 网站的设置页面创建，仅显示一次请妥善保存。<br>
+                        同一账号同一时间只能有一个生成任务；有周额度限制。
+                    </div>
+                    <div class="flex-container" style="gap:12px; margin-top:8px;">
+                        <div class="flex1">
+                            <label for="image_st_latent_resolution">分辨率</label>
+                            <select id="image_st_latent_resolution" class="text_pole">
+                                <option value="portrait" {{#if (eq latent_resolution "portrait")}}selected{{/if}}>竖图 920×1536</option>
+                                <option value="square" {{#if (eq latent_resolution "square")}}selected{{/if}}>方图 1024×1024</option>
+                                <option value="landscape" {{#if (eq latent_resolution "landscape")}}selected{{/if}}>横图 1536×920</option>
+                            </select>
+                        </div>
+                        <div class="flex1">
+                            <label for="image_st_latent_steps">步数 (8-12)</label>
+                            <input id="image_st_latent_steps" class="text_pole" type="number" min="8" max="12" step="1" value="{{latent_steps}}" />
+                        </div>
+                    </div>
+                    <div class="flex-container" style="gap:12px; margin-top:8px;">
+                        <div class="flex1">
+                            <label for="image_st_latent_sampler">采样器</label>
+                            <select id="image_st_latent_sampler" class="text_pole">
+                                <option value="euler" {{#if (eq latent_sampler "euler")}}selected{{/if}}>Euler</option>
+                                <option value="res_multistep" {{#if (eq latent_sampler "res_multistep")}}selected{{/if}}>Res Multistep</option>
+                                <option value="er_sde" {{#if (eq latent_sampler "er_sde")}}selected{{/if}}>ER SDE</option>
+                            </select>
+                        </div>
+                        <div class="flex1">
+                            <label for="image_st_latent_scheduler">调度器</label>
+                            <select id="image_st_latent_scheduler" class="text_pole">
+                                <option value="sgm_uniform" {{#if (eq latent_scheduler "sgm_uniform")}}selected{{/if}}>SGM Uniform</option>
+                                <option value="beta" {{#if (eq latent_scheduler "beta")}}selected{{/if}}>Beta</option>
+                                <option value="beta57" {{#if (eq latent_scheduler "beta57")}}selected{{/if}}>Beta 5/7</option>
+                                <option value="linear_quadratic" {{#if (eq latent_scheduler "linear_quadratic")}}selected{{/if}}>Linear Quadratic</option>
+                            </select>
+                        </div>
+                    </div>
+                    <label for="image_st_latent_negative_prompt">负面提示词</label>
+                    <textarea id="image_st_latent_negative_prompt" class="text_pole textarea_compact autoSetHeight" rows="2">{{latent_negative_prompt}}</textarea>
+                    <div class="flex-container alignitemscenter image-st-action-row" style="margin-top:8px;">
+                        <button id="image_st_test_latent" type="button" class="menu_button menu_button_icon">
+                            <i class="fa-solid fa-plug"></i> <span>测试连接</span>
+                        </button>
+                        <span id="image_st_latent_test_result" style="font-size:12px;color:var(--SmartThemeBodyColor);"></span>
+                    </div>
+                </div>
+
+                <div id="image_st_comfy_only_section" data-comfy-only>
+                <div class="flex-container alignitemscenter image-st-action-row">
+                    <button id="image_st_test_comfy" type="button" class="menu_button menu_button_icon">
+                        <i class="fa-solid fa-plug"></i> <span>测试连接</span>
+                    </button>
+                    <span id="image_st_comfy_status" class="image-st-llm-status"></span>
+                    <span id="image_st_comfy_test_result" style="font-size:12px;color:var(--SmartThemeBodyColor);"></span>
+                </div>
+
+                <label for="image_st_comfy_url">ComfyUI URL</label>
+                <input id="image_st_comfy_url" class="text_pole" type="text" value="{{comfy_url}}" />
+
+                <label for="image_st_model">基础模型</label>
+                <div class="flex-container flexnowrap">
+                    <select id="image_st_model" class="text_pole flex1"></select>
+                    <button id="image_st_refresh_models" type="button" class="menu_button" title="刷新模型列表">
+                        <i class="fa-solid fa-sync"></i>
+                    </button>
+                </div>
+
+                <div style="margin:8px 0;font-size:12px;color:var(--SmartThemeBodyColor);opacity:0.6;">
+                    内置工作流：Anima正式版-文生图工作流.json
+                </div>
+
+                <hr>
+
+                <h4>采样设置</h4>
+
+                <label for="image_st_steps">总采样步数</label>
+                <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                    <input type="range" class="neo-range-slider wide100p" id="image_st_steps_slider" min="1" max="150" step="1" value="{{steps}}" />
+                    <input type="number" class="neo-range-input" id="image_st_steps" min="1" max="150" step="1" value="{{steps}}" />
+                </div>
+
+                <label for="image_st_first_steps">首次采样步数 <small>(0=关闭二次采样)</small></label>
+                <input id="image_st_first_steps" class="text_pole" type="number" min="0" max="150" step="1" value="{{first_steps}}" />
+
+                <div id="image_st_first_pass_section" style="display:none;">
+                    <h4>首次采样参数</h4>
+                    <div class="flex-container">
+                        <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                            <small>CFG</small>
+                            <input type="range" class="neo-range-slider wide100p" id="image_st_first_cfg_slider" min="1" max="30" step="0.5" value="{{first_cfg}}" />
+                            <input type="number" class="neo-range-input" id="image_st_first_cfg" min="1" max="30" step="0.5" value="{{first_cfg}}" />
+                        </div>
+                    </div>
+                    <div class="flex-container">
+                        <div class="flex1">
+                            <label for="image_st_first_sampler">采样器</label>
+                            <select id="image_st_first_sampler" class="text_pole"></select>
+                        </div>
+                        <div class="flex1">
+                            <label for="image_st_first_scheduler">调度器</label>
+                            <select id="image_st_first_scheduler" class="text_pole"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <details>
+                <summary>二次采样参数</summary>
+                <div class="flex-container">
+                    <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                        <small>CFG</small>
+                        <input type="range" class="neo-range-slider wide100p" id="image_st_second_cfg_slider" min="1" max="30" step="0.5" value="{{second_cfg}}" />
+                        <input type="number" class="neo-range-input" id="image_st_second_cfg" min="1" max="30" step="0.5" value="{{second_cfg}}" />
+                    </div>
+                </div>
+                <div class="flex-container">
+                    <div class="flex1">
+                        <label for="image_st_second_sampler">采样器</label>
+                        <select id="image_st_second_sampler" class="text_pole"></select>
+                    </div>
+                    <div class="flex1">
+                        <label for="image_st_second_scheduler">调度器</label>
+                        <select id="image_st_second_scheduler" class="text_pole"></select>
+                    </div>
+                </div>
+                </details>
+
+                <hr>
+
+                <label for="image_st_seed">Seed (-1=随机)</label>
+                <input id="image_st_seed" class="text_pole" type="number" min="-1" max="4294967295" step="1" value="{{seed}}" />
+
+                <div class="flex-container">
+                    <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                        <small>Width</small>
+                        <input type="range" class="neo-range-slider wide100p" id="image_st_width_slider" min="64" max="2048" step="8" value="{{width}}" />
+                        <input type="number" class="neo-range-input" id="image_st_width" min="64" max="2048" step="8" value="{{width}}" />
+                    </div>
+                    <div class="alignitemscenter flex-container flexFlowColumn flexGrow flexShrink gap0 flexBasis48p">
+                        <small>Height</small>
+                        <input type="range" class="neo-range-slider wide100p" id="image_st_height_slider" min="64" max="2048" step="8" value="{{height}}" />
+                        <input type="number" class="neo-range-input" id="image_st_height" min="64" max="2048" step="8" value="{{height}}" />
+                    </div>
+                </div>
+                </div><!-- end #image_st_comfy_only_section -->
+
+                <hr>
+
+                <h4>提示词设置</h4>
+                <label for="image_st_fixed_prefix">固定正面提示词 - 前缀</label>
+                <textarea id="image_st_fixed_prefix" class="text_pole textarea_compact autoSetHeight" rows="2">{{fixed_prefix}}</textarea>
+                <label for="image_st_fixed_suffix">固定正面提示词 - 后缀</label>
+                <textarea id="image_st_fixed_suffix" class="text_pole textarea_compact autoSetHeight" rows="2">{{fixed_suffix}}</textarea>
+                <hr>
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_prompt_tags_enabled">
+                    <span>启用自定义提示词标签</span>
+                </label>
+                <details>
+                <summary>设置标签内容</summary>
+                <div class="flex-container alignitemscenter justifySpaceBetween">
+                    <span></span>
+                    <button id="image_st_add_prompt_tag" type="button" class="menu_button menu_button_icon">
+                        <i class="fa-solid fa-tag"></i> <span>添加标签</span>
+                    </button>
+                </div>
+                <div id="image_st_prompt_tags_container"></div>
+                <div class="image-st-hint-text">
+                    启用的标签内容将被附加到固定正面提示词之后，多个标签以 ", " 连接。
+                </div>
+                </details>
+                <hr>
+                <!-- ===== 预设风格提示词 (v1.x) ===== -->
+                <label class="checkbox_label">
+                    <input type="checkbox" id="image_st_style_preset_enabled">
+                    <span>启用预设风格提示词</span>
+                </label>
+                <details id="image_st_style_preset_details">
+                <summary>设置风格</summary>
+                <div class="image-st-hint-text" style="margin-bottom:6px;">
+                    选中的风格标签将附加在最终提示词末尾、固定正面提示词后缀之前。
+                </div>
+                <!-- 整体风格方案 -->
+                <div class="flex-container alignitemscenter" style="margin-bottom:8px;gap:8px;">
+                    <label style="white-space:nowrap;min-width:70px;">整体风格方案</label>
+                    <select id="image_st_style_overall" class="text_pole flex1"></select>
+                </div>
+                <!-- 五大分类下拉 -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;">
+                    <div>
+                        <label for="image_st_style_aesthetic" style="font-size:12px;">美学流派</label>
+                        <select id="image_st_style_aesthetic" class="text_pole wide100p"></select>
+                    </div>
+                    <div>
+                        <label for="image_st_style_medium" style="font-size:12px;">艺术媒介</label>
+                        <select id="image_st_style_medium" class="text_pole wide100p"></select>
+                    </div>
+                    <div>
+                        <label for="image_st_style_mood" style="font-size:12px;">情绪氛围</label>
+                        <select id="image_st_style_mood" class="text_pole wide100p"></select>
+                    </div>
+                    <div>
+                        <label for="image_st_style_material" style="font-size:12px;">材质质感</label>
+                        <select id="image_st_style_material" class="text_pole wide100p"></select>
+                    </div>
+                    <div style="grid-column:1/-1;">
+                        <label for="image_st_style_lighting" style="font-size:12px;">色调光影</label>
+                        <select id="image_st_style_lighting" class="text_pole wide100p"></select>
+                    </div>
+                </div>
+                <div class="image-st-hint-text" style="margin-top:6px;" id="image_st_style_preview_hint"></div>
+                </details>
+                <hr>
+                <label for="image_st_negative_prompt">负面提示词</label>
+                <textarea id="image_st_negative_prompt" class="text_pole textarea_compact autoSetHeight" rows="2">{{negative_prompt}}</textarea>
+                <hr>
+                <details>
+                <summary>LoRA 设置</summary>
+                <div id="image_st_lora_container"></div>
+                </details>
+            </div>
+            <div class="image-st-tab-content" data-tab="charlib" style="display:none;">
+                <div class="image-st-fold-section">
+                  <div class="image-st-fold-header" data-section="mvu">
+                    <span class="image-st-fold-arrow">▶</span>
+                    <b>MVU 角色库</b>
+                    <label class="checkbox_label" style="margin:0 0 0 6px;flex-shrink:0;">
+                      <input type="checkbox" id="image_st_mvu_enabled">
+                    </label>
+                    <span id="image_st_mvu_fold_status" class="image-st-hint-text" style="margin-left:auto;font-size:11px;"></span>
+                  </div>
+                  <div class="image-st-fold-body" id="image_st_mvu_fold_body">
+                    <div id="image_st_mvu_status" class="image-st-hint-text" style="margin:4px 0;">
+                        MVU 状态：未检测
+                    </div>
+                    <div id="image_st_mvu_invalid" class="image-st-mvu-invalid" style="display:none;">
+                        <span id="image_st_mvu_invalid_text"></span>
+                        <span id="image_st_mvu_invalid_view" class="image-st-mvu-invalid-btn">查看</span>
+                        <span id="image_st_mvu_invalid_clear" class="image-st-mvu-invalid-btn">一键清除</span>
+                    </div>
+                    <div class="flex-container alignitemscenter justifySpaceBetween">
+                        <input type="text" id="image_st_mvu_search" class="text_pole" placeholder="搜索变量名 / 路径…" style="flex:1; min-width:0;" />
+                        <span id="image_st_mvu_expand_all" class="image-st-tree-tool-btn" title="全部展开"><i class="fa-solid fa-angles-down"></i></span>
+                        <span id="image_st_mvu_collapse_all" class="image-st-tree-tool-btn" title="全部收起"><i class="fa-solid fa-angles-up"></i></span>
+                        <button id="image_st_mvu_load_tree" type="button" class="menu_button menu_button_icon">
+                            <i class="fa-solid fa-tree"></i> <span>加载 MVU 树</span>
+                        </button>
+                    </div>
+                    <div id="image_st_mvu_selected" class="image-st-mvu-selected"></div>
+                    <div id="image_st_mvu_tree" class="image-st-mvu-tree">
+                        <div class="image-st-hint-text">点击「加载 MVU 树」查看可用数据路径</div>
+                    </div>
+                    <div class="image-st-hint-text">
+                        勾选任意节点后，其数据将在生成时注入 LLM；分支 checkbox 支持一键全选/取消全部子孙。集合成员（如人物下的角色）按正文出现情况智能注入，其余节点命中即注入。
+                    </div>
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="image-st-fold-section">
+                  <div class="image-st-fold-header" data-section="db">
+                    <span class="image-st-fold-arrow">▶</span>
+                    <b>神·数据库</b>
+                    <label class="checkbox_label" style="margin:0 0 0 6px;flex-shrink:0;">
+                      <input type="checkbox" id="image_st_db_enabled">
+                    </label>
+                    <span id="image_st_db_fold_status" class="image-st-hint-text" style="margin-left:auto;font-size:11px;"></span>
+                  </div>
+                  <div class="image-st-fold-body" id="image_st_db_fold_body">
+                    <div id="image_st_db_status" class="image-st-hint-text" style="margin:4px 0;">
+                        数据库状态：未检测
+                    </div>
+                    <div id="image_st_db_invalid" class="image-st-mvu-invalid" style="display:none;">
+                        <span id="image_st_db_invalid_text"></span>
+                    </div>
+                    <div class="flex-container alignitemscenter justifySpaceBetween">
+                        <span></span>
+                        <button id="image_st_db_scan" type="button" class="menu_button menu_button_icon">
+                            <i class="fa-solid fa-magnifying-glass"></i> <span>扫描数据库</span>
+                        </button>
+                    </div>
+                    <div id="image_st_db_selected" class="image-st-mvu-selected"></div>
+                    <div class="flex-container alignitemscenter justifySpaceBetween">
+                        <input type="text" id="image_st_db_search" class="text_pole" placeholder="搜索表名 / 字段…" style="flex:1; min-width:0;" />
+                        <span id="image_st_db_expand_all" class="image-st-tree-tool-btn" title="全部展开"><i class="fa-solid fa-angles-down"></i></span>
+                        <span id="image_st_db_collapse_all" class="image-st-tree-tool-btn" title="全部收起"><i class="fa-solid fa-angles-up"></i></span>
+                    </div>
+                    <div id="image_st_db_tree" class="image-st-mvu-tree">
+                        <div class="image-st-hint-text">点击「扫描数据库」查看可用表与字段</div>
+                    </div>
+                    <div class="image-st-hint-text">
+                        表级 checkbox 一键全选/取消该表所有字段。数据库注入自动匹配正文中出现的角色名，仅注入勾选字段。未在正文出现的角色不注入。
+                    </div>
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="image-st-fold-section">
+                  <div class="image-st-fold-header" data-section="bbs">
+                    <span class="image-st-fold-arrow">▶</span>
+                    <b>柏宝书角色库</b>
+                    <label class="checkbox_label" style="margin:0 0 0 6px;flex-shrink:0;">
+                      <input type="checkbox" id="image_st_bbs_enabled">
+                    </label>
+                    <span id="image_st_bbs_fold_status" class="image-st-hint-text" style="margin-left:auto;font-size:11px;"></span>
+                  </div>
+                  <div class="image-st-fold-body" id="image_st_bbs_fold_body">
+                    <div id="image_st_bbs_status" class="image-st-hint-text" style="margin:4px 0;">
+                      柏宝书状态：未检测
+                    </div>
+                    <div id="image_st_bbs_invalid" class="image-st-mvu-invalid" style="display:none;">
+                      <span id="image_st_bbs_invalid_text"></span>
+                      <span id="image_st_bbs_invalid_clear" class="image-st-mvu-invalid-btn">清除失效选择</span>
+                    </div>
+                    <div class="flex-container alignitemscenter justifySpaceBetween">
+                      <span></span>
+                      <span style="display:flex;gap:6px;">
+                        <button id="image_st_bbs_defaults" type="button" class="menu_button menu_button_icon" title="为所有条目勾选默认的视觉字段（性别 / 年龄 / 身份 / 外貌 / 着装 / 状态 / 地点名 / 地点描述 / 当前时间 / 物品名 / 物品描述）">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> <span>按默认勾选</span>
+                        </button>
+                        <button id="image_st_bbs_refresh" type="button" class="menu_button menu_button_icon">
+                            <i class="fa-solid fa-arrows-rotate"></i> <span>读取名册</span>
+                        </button>
+                      </span>
+                    </div>
+                    <div id="image_st_bbs_selected" class="image-st-mvu-selected"></div>
+                    <div class="flex-container alignitemscenter justifySpaceBetween">
+                        <input type="text" id="image_st_bbs_search" class="text_pole" placeholder="搜索角色 / 地点 / 物品…" style="flex:1; min-width:0;" />
+                        <span id="image_st_bbs_expand_all" class="image-st-tree-tool-btn" title="全部展开"><i class="fa-solid fa-angles-down"></i></span>
+                        <span id="image_st_bbs_collapse_all" class="image-st-tree-tool-btn" title="全部收起"><i class="fa-solid fa-angles-up"></i></span>
+                    </div>
+                    <div id="image_st_bbs_tree" class="image-st-mvu-tree">
+                        <div class="image-st-hint-text">点击「读取名册」查看柏宝书的角色 / 场景 / 物品</div>
+                    </div>
+                    <div class="image-st-hint-text">
+                        只读取柏宝书【角色】功能（主角档案 / NPC 名册 / 场景 / 物品），<b>不使用</b>其自定义变量系统（vars：用户自建的通用 KV 树，无固定 schema）。
+                        <b>不勾选即不注入</b>：分组/条目/字段三级 checkbox，勾选哪些字段就注入哪些；可点「按默认勾选」一键铺好视觉字段。
+                        注入白名单只含「主要角色 + 在场角色 + 当前地点链 + 可达物品」，同区域 / 不在场 / 其他地点 / 他处寄存物品默认排除。
+                    </div>
+                    <label class="checkbox_label"><input type="checkbox" id="image_st_bbs_include_nearby"><span>纳入同区域角色</span></label>
+                    <label class="checkbox_label"><input type="checkbox" id="image_st_bbs_include_absent"><span>纳入不在场角色</span></label>
+                    <label class="checkbox_label"><input type="checkbox" id="image_st_bbs_include_other_scenes"><span>纳入其他地点</span></label>
+                    <label class="checkbox_label"><input type="checkbox" id="image_st_bbs_include_distant_items"><span>纳入他处寄存物品</span></label>
+                    <label class="checkbox_label"><input type="checkbox" id="image_st_bbs_name_gate"><span>只注入正文出现的角色（正文门控）</span></label>
+                  </div>
+                </div>
+
+                <hr>
+
+                <div class="image-st-fold-section">
+                  <div class="image-st-fold-header" data-section="local">
+                    <span class="image-st-fold-arrow">▶</span>
+                    <b>本地角色库</b>
+                    <label class="checkbox_label" style="margin:0 0 0 6px;flex-shrink:0;">
+                      <input type="checkbox" id="image_st_local_enabled">
+                    </label>
+                    <span id="image_st_local_fold_status" class="image-st-hint-text" style="margin-left:auto;font-size:11px;"></span>
+                  </div>
+                  <div class="image-st-fold-body" id="image_st_local_fold_body">
+                    <div id="image_st_local_status" class="image-st-hint-text" style="margin:4px 0;"></div>
+                    <label for="image_st_local_worldbook_select">选择世界书条目</label>
+                     <select id="image_st_local_worldbook_select" class="text_pole" style="width:100%;">
+                       <option value="">-- 选择世界书 --</option>
+                     </select>
+                     <div id="image_st_local_keywords_section" style="margin:4px 0;">
+                       <label for="image_st_local_keywords" style="font-size:11px;color:var(--SmartThemeBodyColor);opacity:0.7;">世界书关键词（自动匹配用，用逗号分隔）</label>
+                       <textarea id="image_st_local_keywords" class="text_pole textarea_compact" rows="2" placeholder="世界观, 历史, 种族, 地图..."></textarea>
+                     </div>
+                      <div style="margin:4px 0;display:flex;gap:6px;">
+                        <input type="text" id="image_st_local_search" class="text_pole" placeholder="搜索条目内容，多个关键词用逗号分隔…" style="flex:1;min-width:0;" />
+                        <button id="image_st_local_search_btn" type="button" class="menu_button menu_button_icon" title="按关键词激活匹配条目（增量添加，不影响已勾选项）">
+                          <i class="fa-solid fa-magnifying-glass"></i> <span>激活匹配</span>
+                        </button>
+                      </div>
+                                           <div id="image_st_local_entry_tree" class="image-st-mvu-tree" style="max-height:200px;overflow-y:auto;border:1px solid var(--SmartThemeBodyColor);padding:4px;margin:4px 0;">
+                      <div class="image-st-hint-text">请先选择世界书</div>
+                    </div>
+                      <div id="image_st_local_selected_tags" class="image-st-mvu-selected" style="margin:4px 0;"></div>
+                      <div style="font-size:12px;color:var(--SmartThemeBodyColor);opacity:0.8;margin:4px 0;">
+                        <b>构建 API 源：</b>
+                        <label style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;">
+                          <input type="radio" name="image_st_local_api_source" value="auto" checked>
+                          自动（跟随全局 LLM 配置）
+                        </label>
+                        <label style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;">
+                          <input type="radio" name="image_st_local_api_source" value="local">
+                          本地 llama.cpp
+                        </label>
+                        <label style="display:inline-flex;align-items:center;gap:4px;">
+                          <input type="radio" name="image_st_local_api_source" value="online">
+                          在线 API
+                        </label>
+                      </div>
+<div class="flex-container alignitemscenter" style="gap:8px;flex-wrap:wrap;align-items:center;">
+                        <label style="font-size:12px;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+                          <input type="radio" name="image_st_local_build_mode" value="merge" checked>
+                          追加合并
+                        </label>
+                        <label style="font-size:12px;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+                          <input type="radio" name="image_st_local_build_mode" value="overwrite">
+                          覆盖重建
+                        </label>
+                      </div>
+                      <div style="margin:8px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                        <label style="font-size:12px;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+                          <input type="radio" name="image_st_local_chunk_strategy" value="merge" checked>
+                          合并分段（按 token 限制合并条目）
+                        </label>
+                        <label style="font-size:12px;display:flex;align-items:center;gap:4px;white-space:nowrap;">
+                          <input type="radio" name="image_st_local_chunk_strategy" value="per_entry">
+                          逐项构建（每个条目单独处理）
+                        </label>
+                      </div>
+                      <div class="image-st-hint-text" style="margin-top:4px;font-size:11px;">
+                        合并分段：适合条目较短、上下文关联强的场景；逐项构建：适合条目较长、需精细提取、避免上下文干扰的场景
+                      </div>
+                      <div class="flex-container alignitemscenter" style="gap:8px;flex-wrap:wrap;align-items:center;">
+                        <button id="image_st_local_build" type="button" class="menu_button menu_button_icon">
+                          <i class="fa-solid fa-hammer"></i> <span>构建角色库</span>
+                        </button>
+                        <button id="image_st_local_cancel" type="button" class="menu_button menu_button_icon" style="display:none;">
+                          <i class="fa-solid fa-xmark"></i> <span>取消构建</span>
+                        </button>
+                        <button id="image_st_local_open_dir" type="button" class="menu_button menu_button_icon">
+                          <i class="fa-solid fa-folder-open"></i> <span>打开目录</span>
+                        </button>
+                        <label class="checkbox_label" title="启用后在请求中传递 thinking: enabled，适合支持思考模式的模型（如 qwen3）；禁用后传递 thinking: disabled 抑制思考输出" style="margin-left:4px;font-size:12px;">
+                          <input type="checkbox" id="image_st_local_thinking_enabled">
+                          <span>模型思考</span>
+                        </label>
+                        <label class="checkbox_label" title="启用后抽取并注入 NSFW 身体特征（胸部/乳晕/乳头/腰胯臀/私处）与内衣槽位；关闭则跳过这些槽位" style="margin-left:4px;font-size:12px;">
+                          <input type="checkbox" id="image_st_nsfw_enabled">
+                          <span>NSFW 特征</span>
+                        </label>
+                      </div>
+                  </div>
+                </div>
+
+                <hr>
+
+                <b>注入段顺序</b>
+                <label for="image_st_injection_order">信息段排列顺序</label>
+                <select id="image_st_injection_order" class="text_pole">
+                    <option value="info_first" selected>角色信息 → 正文（默认）</option>
+                    <option value="body_first">正文 → 角色信息</option>
+                </select>
+                <div class="image-st-hint-text">
+                    控制角色信息（MVU / 数据库）与正文在 LLM 输入中的排列顺序。
+                </div>
+
+                <hr>
+
+                <b>注入预览</b>
+                <div class="flex-container alignitemscenter image-st-action-row">
+                    <button id="image_st_preview_injection" type="button" class="menu_button menu_button_icon">
+                        <i class="fa-solid fa-eye"></i> <span>预览注入结果</span>
+                    </button>
+                    <span id="image_st_preview_chars" style="font-size:12px;color:var(--SmartThemeBodyColor);opacity:0.6;">(0 字符)</span>
+                </div>
+                <textarea id="image_st_preview_result" class="text_pole textarea_compact autoSetHeight" rows="8" readonly placeholder="点击「预览注入结果」查看最终 LLM 输入..."></textarea>
+                <div class="image-st-hint-text">
+                    预览内容与发送至 LLM 的内容完全一致。
+                </div>
+            </div>
+            <div class="image-st-tab-content" data-tab="pipeline" style="display:none;">
+<div class="image-st-lora-section">
+        <div class="image-st-lora-header"><b>输出模式</b></div>
+        <label class="checkbox_label" style="gap:8px;">
+            <span>解析模式</span>
+            <select id="image_st_extract_mode" class="text_pole" style="flex:1;">
+                <option value="description">只解析自然语言描述</option>
+                <option value="tags">只解析 Danbooru 标签</option>
+                <option value="mixed">混合式（描述 + 标签）</option>
+                <option value="custom">完全自定义</option>
+            </select>
+        </label>
+<div class="image-st-hint-text">
+            决定第一阶段 LLM 的输出如何进入后续管线：自然语言链走规则引擎组装，Danbooru 链走词典匹配优化。
+            <b>v2.4 起</b>四种模式的系统提示词各自精确切分：选「只解析自然语言描述」时 LLM <b>不会</b>输出 tags（省 token），选「只解析 Danbooru 标签」时不会输出 description；混合式两者都要，且职责分离（tags 只放外观身份，description 只放动作关系）。
+            <b>完全自定义</b>：插件不注入任何规范/契约/固定层，用户预设即完整系统提示词，LLM 输出格式任意（纯文本/JSON/<thinking>+<json>），插件提取 prompt 字段直通生图。需自行保证含安全分级/人数/外观/景别等关键要素。
+        </div>
+    </div>
+
+    <div class="image-st-lora-section">
+        <div class="image-st-lora-header">
+            <b>管线模块</b>
+            <span id="image_st_pipeline_count" class="image-st-hint-text" style="margin-left:auto;"></span>
+            <span id="image_st_pipeline_reset" class="image-st-mvu-chip" style="cursor:pointer;">恢复默认</span>
+        </div>
+        <div id="image_st_pipeline_modules"></div>
+        <div class="image-st-hint-text">
+            阶段1（清洗）与阶段2（信息源注入）由「文本清洗」「角色库」tab 的设置直接决定，此处只显示是否已激活，不提供开关；其余模块的开关与设置就在对应模块下方。
+        </div>
+    </div>
+
+    <div class="image-st-lora-section">
+        <div class="image-st-lora-header"><b>本次运行诊断</b></div>
+        <div id="image_st_pipeline_reports"></div>
+    </div>
+
+<div class="image-st-lora-section">
+        <div class="image-st-lora-header">
+            <b>管线预览</b>
+            <span class="image-st-hint-text" style="margin-left:auto;">用缓存的抽取结果离线重跑阶段5-7（不调用 LLM）</span>
+        </div>
+        <div class="flex-container alignitemscenter" style="gap:8px;">
+            <button id="image_st_preview_pipeline" type="button" class="menu_button menu_button_icon">
+                <i class="fa-solid fa-play"></i> <span>预览阶段5-7</span>
+            </button>
+        </div>
+        <textarea id="image_st_preview_pipeline_result" class="text_pole textarea_compact autoSetHeight" rows="10" readonly placeholder="点击「预览阶段5-7」查看逐段产物与阶段报告…"></textarea>
+        <div class="image-st-hint-text">
+            需要先执行一次生成（第一阶段 LLM 的抽取结果会被缓存）；之后调开关即可离线复看阶段5-7 的实际效果。
+        </div>
+    </div>
+
+</div>
+
+<template id="image_st_tpl_pov">
+        <div class="image-st-pipeline-editor">
+            <label for="image_st_pov_triggers">POV 叙述者触发词 <small>(逗号分隔，命中即判为第一人称视角)</small></label>
+            <textarea id="image_st_pov_triggers" class="text_pole textarea_compact autoSetHeight" rows="2" placeholder="晁大棒, 伊恩·格雷"></textarea>
+            <div class="flex-container alignitemscenter image-st-action-row" style="gap:8px; margin-top:8px;">
+                <button id="image_st_test_pov" type="button" class="menu_button menu_button_icon">
+                    <i class="fa-solid fa-flask"></i> <span>测试 POV 判定</span>
+                </button>
+            </div>
+            <div id="image_st_pov_triggers_hint" class="image-st-hint-text"></div>
+            <textarea id="image_st_pov_test_result" class="text_pole textarea_compact autoSetHeight" rows="8" readonly placeholder="点击「测试 POV 判定」查看详细判定过程..." style="margin-top:8px; display:none;"></textarea>
+        </div>
+    </template>
+
+    <template id="image_st_tpl_extract">
+        <div class="image-st-pipeline-editor">
+            <div class="image-st-lora-header">
+                <b>提示词模板（动态切换）</b>
+            </div>
+            <div class="image-st-hint-text">
+                <b>v2.6 起</b>四种模式各有一份提示词，<b>互不影响</b>；每个模式的 LLM <b>只产出自己那一种</b>输出
+                （只解析标签 → 不吐 description；只解析描述 → 不吐 tags；完全自定义 → 任意格式）。留空 = 该模式的内置默认模板。
+                <br>下方文本框显示当前「解析模式」下拉框选中的模式对应的提示词；切换模式会自动加载对应预设。
+            </div>
+
+            <div class="image-st-lora-header">
+                <b>当前模式提示词</b>
+                <span id="image_st_prompt_preset_active_reset" class="image-st-mvu-chip" style="cursor:pointer;margin-left:auto;">恢复默认</span>
+            </div>
+            <textarea id="image_st_prompt_preset_active" class="text_pole textarea_compact autoSetHeight" rows="6" placeholder="留空 = 使用内置默认模板（当前模式专属）"></textarea>
+            <input type="hidden" id="image_st_prompt_preset_active_mode" value="">
+        </div>
+    </template>
+
+    <template id="image_st_tpl_tagtool">
+        <div class="image-st-pipeline-editor">
+            <label class="checkbox_label" style="gap:8px;">
+                <span>词库来源</span>
+                <select id="image_st_tagtool_source" class="text_pole" style="flex:1;">
+                    <option value="auto">自动（MCP 在线优先，失败回落本地词库）</option>
+                    <option value="mcp">仅 MCP 在线服务</option>
+                    <option value="local">仅本地词库</option>
+                </select>
+            </label>
+            <label class="checkbox_label" style="gap:8px;">
+                <span>MCP 端点</span>
+                <input type="text" id="image_st_tagtool_mcp_url" class="text_pole" style="flex:1;">
+            </label>
+            <label class="checkbox_label" style="gap:8px;">
+                <span>单次候选上限</span>
+                <input type="number" id="image_st_tagtool_max_candidates" class="text_pole" style="width:90px;">
+            </label>
+            <label class="checkbox_label" style="gap:8px;">
+                <span>工具往返轮数</span>
+                <input type="number" id="image_st_tagtool_max_rounds" class="text_pole" style="width:90px;">
+            </label>
+            <div id="image_st_tagtool_status" class="image-st-hint-text"></div>
+            <div class="image-st-lora-header" style="margin-top:6px;"><b>词库管理</b></div>
+            <div id="image_st_dict_status" class="image-st-hint-text">内嵌精选词库；导入 词库.bmz 后自动持久化（浏览器本地保存，刷新页面自动恢复）</div>
+            <div class="image-st-dict-actions">
+                <button id="image_st_dict_import" class="menu_button menu_button_icon" type="button"><i class="fa-solid fa-file-import"></i><span>导入词库</span></button>
+                <button id="image_st_dict_remove" class="menu_button menu_button_icon" type="button"><i class="fa-solid fa-trash-can"></i><span>移除持久化</span></button>
+            </div>
+            <div class="image-st-hint-text">
+                词库服务「Danbooru 解析链（词典匹配）」「词库校验告警」与标签检索工具；未导入时使用内嵌精选（1040 条），导入后为完整词库（34.7 万词）。
+            </div>
+        </div>
+    </template>
+
+    <template id="image_st_tpl_weight">
+        <div class="image-st-pipeline-editor">
+            <label for="image_st_ext_weight_map">权重映射 <small>(每行一个「标签=权重」)</small></label>
+            <textarea id="image_st_ext_weight_map" class="text_pole textarea_compact autoSetHeight" rows="4" placeholder="black hair=1.2&#10;school uniform=1.1"></textarea>
+            <div class="image-st-hint-text">
+                例：<code>black hair=1.2</code>。仅在「格式化 → 权重映射」模块启用时生效（只作用于标签段；人数标签会被跳过）。
+            </div>
+        </div>
+    </template>
+
+    <template id="image_st_tpl_budget">
+        <div class="image-st-pipeline-editor">
+            <label class="checkbox_label" style="gap:8px;">
+                <span>标签条数上限</span>
+                <input type="number" id="image_st_budget_max" class="text_pole" style="width:90px;" min="0" max="200">
+            </label>
+            <div class="image-st-hint-text">
+                仅限制**标签段（Hard Tags）**的条数，超出时从尾部截断（尾部=背景类标签）并列出被删标签。
+                自然语言段不受影响。<br>
+                <b>v2.4 默认 45</b>：实测热门提示词单角色 25~45 标签、中位 39（旧默认 25 会砍掉一半）；多角色场景建议调到 60~80。
+            </div>
+        </div>
+    </template>
+
+    <template id="image_st_tpl_review">
+        <div class="image-st-pipeline-editor">
+            <details class="image-st-collapsible-section" open>
+                <summary class="image-st-collapsible-summary">
+                    <b>审核提示词（可折叠）</b>
+                </summary>
+                <div class="image-st-collapsible-content">
+                    <label class="checkbox_label"><input type="checkbox" id="image_st_review_include_source"><span>把原始正文一并给审核模型</span></label>
+                    <label class="checkbox_label"><input type="checkbox" id="image_st_review_keep_original"><span>本次忽略审核结果</span></label>
+                    <div class="image-st-hint-text">审核模板（留空 = 内置默认模板，支持占位符 {prompt} {source}）：</div>
+                    <div class="flex-container alignitemscenter justifySpaceBetween">
+                        <span></span>
+                        <span id="image_st_review_prompt_preset_reset" class="image-st-mvu-chip" style="cursor:pointer;">恢复默认审核模板</span>
+                    </div>
+                    <textarea id="image_st_review_prompt_preset" class="text_pole textarea_compact autoSetHeight" rows="4" placeholder="留空 = 内置默认审核模板"></textarea>
+                    <div class="image-st-hint-text">
+                        <b>v2.4 起</b>审核基准会按送审提示词的形态自动切换：纯标签 / 自然语言句子 / 双段混合各给一套审查条目（矛盾消解 → 顺序 → 权重 → 重复 → 不编造 → 长度 → 多角色）。
+                    </div>
+                    <div class="image-st-hint-text">追加审核要求：</div>
+                    <textarea id="image_st_review_prompt_custom" class="text_pole textarea_compact autoSetHeight" rows="3" placeholder="例：优先保留服装与场景标签"></textarea>
+                </div>
+            </details>
+        </div>
+    </template>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
