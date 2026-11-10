@@ -1,12 +1,8 @@
-# st-ctx-bridge
+# lx-runtime-bridge
 
-SillyTavern context pipeline utility.
+Lightweight runtime data bridge for local workflow integration.
 
-## Install
-
-Paste the repository URL into the SillyTavern Extensions panel → Install from URL.
-
-## Development
+## Setup
 
 ```bash
 npm install

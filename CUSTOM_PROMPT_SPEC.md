@@ -1,4 +1,4 @@
-# 完全自定义模式 提示词格式规范
+# Custom Mode — Format Spec
 
 ## 概述
 - 模式标识：`custom`

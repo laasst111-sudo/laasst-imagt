@@ -1,5 +1,5 @@
 {
-  "name": "st-ctx-bridge",
+  "name": "lx-runtime-bridge",
   "version": "2.3.1",
   "private": true,
   "type": "module",
